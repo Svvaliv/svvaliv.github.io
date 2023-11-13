@@ -1,2 +1,7 @@
 format: jb-book
-root: example
+root: my_blog/index
+parts:
+- caption: Object Model
+  numbered: true
+  chapters:
+  - file: my_blog/main
