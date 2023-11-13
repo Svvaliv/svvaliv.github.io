@@ -1,1 +1,16 @@
 remote_theme: pages-themes/cayman@v0.2.0
+title: Testing Blog
+author: Valeriy Svetkin
+
+repository:
+  url: https://github.com/Svvaliv/svvaliv.github.io
+  branch: main
+
+execute:
+  allow_errors: true
+
+html:
+  use_repository_button: true
+
+launch_buttons:
+  notebook_interface: jupyterlab
