@@ -1,0 +1,89 @@
+name: deploy-book
+
+on:
+  push:
+    branches:
+    - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-book:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: environment.yml
+        activate-environment: level-up-your-python
+        miniforge-variant: Mambaforge
+        use-mamba: true
+
+    - name: Install the kernel
+      run: |
+        python -m ipykernel install --user --name conda-env-level-up-your-python-py
+
+    - name: Build the book
+      run: |
+        jupyter-book build .
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: jupyterbook
+        path: _build/html/*
+
+
+  build-pyodide:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build the Pyodide output
+      run: |
+        pipx run nox -s pyodide
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: jupyterlite
+        path: _output/*
+
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: [build-book, build-pyodide]
+    steps:
+    - name: Setup Pages
+      uses: actions/configure-pages@v1
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: jupyterbook
+        path: public
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: jupyterlite
+        path: public/live
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: public
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
