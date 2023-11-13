@@ -13,3 +13,6 @@ html:
 
 launch_buttons:
   notebook_interface: jupyterlab
+
+launch_buttons:
+  notebook_interface: jupyterlab
